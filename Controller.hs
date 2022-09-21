@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Controller
   ( getFilms,
@@ -45,8 +45,8 @@ getTimeslots connection = do
 
 reserveSeat :: Connection -> ActionM ()
 reserveSeat connection = do
-  (Reservation _ _filmId _hallId _timeSlotId _seatId _userName _paid) <- jsonData :: ActionM Reservation
-  exists <- liftIO $ reservationExists connection _hallId _seatId _timeSlotId
+  (Reservation _ _timeSlotId _seatId _userName _paid) <- jsonData :: ActionM Reservation
+  exists <- liftIO $ reservationExists connection _seatId _timeSlotId
   if exists 
     then do
       status status400
@@ -56,11 +56,11 @@ reserveSeat connection = do
 
 insertReservation :: Connection -> ActionM()
 insertReservation connection = do
-  (Reservation _ _filmId _hallId _timeSlotId _seatId _userName _paid) <- jsonData :: ActionM Reservation
-  let result = execute connection "INSERT INTO reservations (filmId, hallId, timeSlotId, seatId, userName, paid) \
-                                  \VALUES (?, ?, ?, ?, ?, ?)"
-                                  (_filmId, _hallId, _timeSlotId, _seatId, _userName, _paid)
-  x <- liftIO result
+  (Reservation _ _timeSlotId _seatId _userName _paid) <- jsonData :: ActionM Reservation
+  let result = execute connection "INSERT INTO reservations (timeSlotId, seatId, userName, paid) \
+                                  \VALUES (?, ?, ?, ?)"
+                                  (_timeSlotId, _seatId, _userName, _paid)
+  x <- Scotty.liftAndCatchIO result
   if x > 0 
     then do
       status status201
@@ -70,8 +70,8 @@ insertReservation connection = do
       Scotty.json $ object ["error" .= ("Reservation not created" :: String)]
 
 
-reservationExists :: Connection -> Int -> Int -> Int -> IO Bool
-reservationExists connection _hallid _seatid _timeslotid = do
-  [Only x] <- query connection "SELECT COUNT(*) FROM reservations WHERE hallid = ? AND seatid = ? AND timeslotid = ?" 
-                               (_hallid, _seatid, _timeslotid) :: IO [Only Int]
+reservationExists :: Connection -> Int -> Int -> IO Bool
+reservationExists connection _seatid _timeslotid = do
+  [Only x] <- query connection "SELECT COUNT(*) FROM reservations WHERE seatid = ? AND timeslotid = ?" 
+                               (_seatid, _timeslotid) :: IO [Only Int]
   return $ x > 0

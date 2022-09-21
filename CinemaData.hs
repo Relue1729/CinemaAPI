@@ -29,8 +29,6 @@ instance ToJSON Timeslot
 
 data Reservation = Reservation
   { reservationId :: !Int,
-    reservationFilmId :: !Int,
-    reservationHallId :: !Int,
     reservationTimeSlotId :: !Int,
     reservationSeatId :: !Int,
     reservationUserName :: !String,
@@ -40,8 +38,6 @@ data Reservation = Reservation
 instance FromJSON Reservation where
   parseJSON (Object o) =
     Reservation <$> o .:? "id" .!= 0
-      <*> o .: "filmId"
-      <*> o .: "hallId"
       <*> o .: "timeSlotId"
       <*> o .: "seatId"
       <*> o .: "userName"
@@ -49,11 +45,9 @@ instance FromJSON Reservation where
   parseJSON _ = fail "Expected an object for Reservation"
 
 instance ToJSON Reservation where
-  toJSON (Reservation reservationId reservationFilmId reservationHallId reservationTimeSlotId reservationSeatId reservationUserName reservationPaid) =
+  toJSON (Reservation reservationId reservationTimeSlotId reservationSeatId reservationUserName reservationPaid) =
     object
       [ "id" .= reservationId,
-        "filmId" .= reservationFilmId,
-        "hallId" .= reservationHallId,
         "timeSlotId" .= reservationTimeSlotId,
         "seatId" .= reservationSeatId,
         "userName" .= reservationUserName,

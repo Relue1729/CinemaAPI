@@ -7,7 +7,7 @@ import CinemaData
 
 
 instance FromRow Reservation where
-  fromRow = Reservation <$> field <*> field <*> field <*> field <*> field <*> field <*> field
+  fromRow = Reservation <$> field <*> field <*> field <*> field <*> field
 
 instance FromRow Film where
   fromRow = Film <$> field <*> field <*> field <*> field
